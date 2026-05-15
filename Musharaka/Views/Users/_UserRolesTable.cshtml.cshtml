@@ -1,0 +1,70 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Musharaka.Models
+@model IEnumerable<ApplicationUser>
+@inject UserManager<ApplicationUser> _userManager
+
+@{
+    ViewData["Title"] = "إدارة الصلاحيات";
+}
+
+<div class="container mt-4 text-end" dir="rtl">
+    <div class="card shadow-sm border-0" style="border-radius: 15px; overflow: hidden;">
+        <div class="card-header bg-primary text-white py-3">
+            <h4 class="mb-0"><i class="bi bi-shield-lock-fill ms-2"></i> إدارة صلاحيات مستخدمي المنصة</h4>
+        </div>
+        <div class="card-body">
+            <p class="text-muted small mb-4">من هنا يمكنك منح صلاحية "أدمن حزب" للأشخاص المفوضين بعد موافقة الوزارة على أحزابهم.</p>
+            
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-end">المستخدم</th>
+                            <th class="text-end">الرقم الوطني</th>
+                            <th class="text-end">الرتبة الحالية</th>
+                            <th class="text-end">تغيير الرتبة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            var roles = await _userManager.GetRolesAsync(user);
+                            var currentRole = roles.FirstOrDefault() ?? "Citizen";
+
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-start">
+                                        <img src="@user.ProfilePictureUrl" class="rounded-circle ms-3" style="width: 45px; height: 45px; object-fit: cover; border: 2px solid #eee;">
+                                        <div>
+                                            <div class="fw-bold">@user.FirstName @user.LastName</div>
+                                            <div class="text-muted small">@user.Email</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">@user.NationalId</span></td>
+                                <td>
+                                    @{
+                                        var badgeClass = currentRole == "MinistryAdmin" ? "bg-danger" : 
+                                                        currentRole == "PartyAdmin" ? "bg-success" : "bg-secondary";
+                                    }
+                                    <span class="badge @badgeClass">@currentRole</span>
+                                </td>
+                                <td>
+                                    <form asp-action="ChangeRole" method="post" class="d-flex gap-2">
+                                        <input type="hidden" name="userId" value="@user.Id" />
+                                        <select name="newRole" class="form-select form-select-sm" style="max-width: 150px;">
+                                            <option value="Citizen" selected="@(currentRole == "Citizen")">Citizen (مواطن)</option>
+                                            <option value="PartyAdmin" selected="@(currentRole == "PartyAdmin")">PartyAdmin (أدمن حزب)</option>
+                                            <option value="MinistryAdmin" selected="@(currentRole == "MinistryAdmin")">MinistryAdmin (وزارة)</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-primary btn-sm px-3">تحديث</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

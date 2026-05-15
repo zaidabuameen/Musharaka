@@ -1,0 +1,89 @@
+﻿@model Musharaka.Models.PoliticalParty
+
+@{
+    ViewData["Title"] = "إضافة حزب جديد";
+}
+
+<div class="container mt-5" dir="rtl">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0" style="border-radius: 20px;">
+                <div class="card-header bg-primary text-white text-center py-4" style="border-radius: 20px 20px 0 0;">
+                    <h3 class="mb-0 fw-bold">تسجيل حزب سياسي جديد</h3>
+                    <p class="small mb-0">يرجى تعبئة كافة الحقول المطلوبة بدقة</p>
+                </div>
+                <div class="card-body p-5">
+                    <form asp-action="Create">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="form-floating">
+                                    <input asp-for="Name" class="form-control" placeholder="اسم الحزب" style="border-radius: 10px;" />
+                                    <label asp-for="Name">اسم الحزب الكامل</label>
+                                    <span asp-validation-for="Name" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <div class="form-floating">
+                                    <select asp-for="Ideology" class="form-select" style="border-radius: 10px;">
+                                        <option value="">اختر التوجه الفكري...</option>
+                                        <option value="ديمقراطي">ديمقراطي</option>
+                                        <option value="اشتراكي">اشتراكي</option>
+                                        <option value="ليبرالي">ليبرالي</option>
+                                        <option value="أخضر">أخضر</option>
+                                        <option value="وسطي">وسطي</option>
+                                    </select>
+                                    <label asp-for="Ideology">التوجه السياسي</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-floating">
+                                <textarea asp-for="Description" class="form-control" style="height: 100px; border-radius: 10px;" placeholder="وصف الحزب"></textarea>
+                                <label asp-for="Description">نبذة عن أهداف الحزب</label>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <div class="form-floating">
+                                    <input asp-for="FoundDate" type="date" class="form-control" style="border-radius: 10px;" />
+                                    <label asp-for="FoundDate">تاريخ التأسيس الرسمي</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <div class="form-floating">
+                                    <input asp-for="City" class="form-control" style="border-radius: 10px;" />
+                                    <label asp-for="City">المحافظة / المدينة</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-floating">
+                                <input asp-for="LogoUrl" class="form-control" style="border-radius: 10px;" placeholder="رابط الشعار" />
+                                <label asp-for="LogoUrl">رابط صورة الشعار (URL)</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-floating">
+                                <input asp-for="Address" class="form-control" style="border-radius: 10px;" />
+                                <label asp-for="Address">العنوان التفصيلي للمقر</label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-5">
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm" style="border-radius: 12px;">حفظ البيانات ونشر الحزب</button>
+                            <a asp-action="Index" class="btn btn-light btn-sm text-secondary border-0">العودة للقائمة الرئيسية</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

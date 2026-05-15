@@ -1,0 +1,166 @@
+﻿@model IEnumerable<Musharaka.Models.PoliticalParty>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> _userManager
+
+@{
+    ViewData["Title"] = "بوابة إدارة الوزارة";
+}
+
+<style>
+    /* لمسات فلاتاوية للجدول */
+    .table-container {
+        background: #ffffff;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .party-logo-circle {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #f0f0f0;
+    }
+
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .btn-action {
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+    }
+
+    .section-title {
+        border-right: 5px solid #007bff;
+        padding-right: 15px;
+        margin-bottom: 25px;
+    }
+</style>
+
+<div class="container mt-4 text-end" dir="rtl">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary section-title">الأحزاب السياسية المسجلة</h2>
+        <a asp-action="Create" class="btn btn-success btn-action px-4 shadow-sm">
+             إضافة حزب جديد +
+        </a>
+    </div>
+
+    <div class="table-container mb-5">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>الشعار</th>
+                    <th>اسم الحزب</th>
+                    <th>التوجه (Ideology)</th>
+                    <th>المقر الرئيسي</th>
+                    <th>الحالة</th>
+                    <th class="text-center">الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model) {
+                    <tr>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.LogoUrl)) {
+                                <img src="@item.LogoUrl" class="party-logo-circle" alt="logo" />
+                            } else {
+                                <div class="party-logo-circle bg-secondary d-flex align-items-center justify-content-center text-white">P</div>
+                            }
+                        </td>
+                        <td class="fw-bold">@item.Name</td>
+                        <td><span class="badge bg-info text-dark">@item.Ideology</span></td>
+                        <td><i class="bi bi-geo-alt-fill text-danger"></i> @item.City</td>
+                        <td>
+                            <span class="status-badge @(item.Status == "Active" ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning")">
+                                @(item.Status == "Active" ? "نشط" : "قيد المراجعة")
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group shadow-sm">
+                                <a asp-action="Edit" asp-route-id="@item.PartyId" class="btn btn-sm btn-outline-primary border-0">تعديل</a>
+                                <a asp-action="Details" asp-route-id="@item.PartyId" class="btn btn-sm btn-outline-info border-0">تفاصيل</a>
+                                <a asp-action="Delete" asp-route-id="@item.PartyId" class="btn btn-sm btn-outline-danger border-0">حذف</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <hr class="my-5 shadow-sm">
+
+    <div class="mb-4">
+        <h2 class="fw-bold text-dark section-title">إدارة صلاحيات المستخدمين</h2>
+        <p class="text-muted">من هنا يمكنك منح صلاحية "أدمن حزب" للأشخاص المفوضين رسمياً.</p>
+    </div>
+
+    <div class="table-container mb-5">
+        @if (ViewBag.AllUsers != null)
+        {
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-end">المستخدم</th>
+                        <th class="text-end">الرقم الوطني</th>
+                        <th class="text-end">الرتبة الحالية</th>
+                        <th class="text-end">تغيير الصلاحية</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in (IEnumerable<ApplicationUser>)ViewBag.AllUsers)
+                    {
+                        var roles = await _userManager.GetRolesAsync(user);
+                        var currentRole = roles.FirstOrDefault() ?? "Citizen";
+
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center justify-content-start">
+                                    <img src="@user.ProfilePictureUrl" class="rounded-circle ms-3 shadow-sm" style="width: 40px; height: 40px; object-fit: cover;">
+                                    <div>
+                                        <div class="fw-bold">@user.FirstName @user.LastName</div>
+                                        <div class="text-muted small">@user.Email</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">@user.NationalId</span></td>
+                            <td>
+                                @{
+                                    var badgeClass = currentRole == "MinistryAdmin" ? "bg-danger" : 
+                                                    currentRole == "PartyAdmin" ? "bg-success" : "bg-secondary";
+                                }
+                                <span class="badge @badgeClass">@currentRole</span>
+                            </td>
+                            <td>
+                                <form asp-controller="Users" asp-action="ChangeRole" method="post" class="d-flex gap-2">
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    <select name="newRole" class="form-select form-select-sm" style="max-width: 150px;">
+                                        <option value="Citizen" selected="@(currentRole == "Citizen")">Citizen</option>
+                                        <option value="PartyAdmin" selected="@(currentRole == "PartyAdmin")">PartyAdmin</option>
+                                        <option value="MinistryAdmin" selected="@(currentRole == "MinistryAdmin")">MinistryAdmin</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-dark btn-sm px-3">تحديث</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="alert alert-info text-center">لا يوجد مستخدمين لعرضهم حالياً.</div>
+        }
+    </div>
+</div>

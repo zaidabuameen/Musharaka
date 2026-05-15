@@ -7,7 +7,7 @@ namespace Musharaka.Models
     {
         [Required]
         [StringLength(10)]
-        public string NationalId { get; set; } = string.Empty;
+        public string NationalId { get; set; } = string.Empty; // الرقم الوطني الأردني
 
         [Required]
         public string FirstName { get; set; } = string.Empty;
@@ -15,17 +15,15 @@ namespace Musharaka.Models
         [Required]
         public string LastName { get; set; } = string.Empty;
 
-        public DateTime DateOfBirth { get; set; }
+        public string ProfilePictureUrl { get; set; } = "/images/default-user.png"; // صورة الشخص
 
-        public string Gender { get; set; } = string.Empty;
+        [Required]
+        public override string PhoneNumber { get; set; } = string.Empty; // رقم الهاتف
 
-        public string Governorate { get; set; } = string.Empty;
-
-        public string LanguagePreference { get; set; } = "Arabic";
+        public string Governorate { get; set; } = string.Empty; // المحافظة
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public virtual ICollection<Membership> Memberships { get; set; } = new List<Membership>();
-        public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
     }
 }

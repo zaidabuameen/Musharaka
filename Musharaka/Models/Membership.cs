@@ -5,16 +5,27 @@ namespace Musharaka.Models
     public class Membership
     {
         [Key]
-        public int MembershipId { get; set; } // [cite: 487]
+        public int MembershipId { get; set; }
 
-        public string UserId { get; set; } = string.Empty; // معرف المستخدم [cite: 490]
+        // الربط مع المستخدم
+        public string UserId { get; set; } = string.Empty;
         public virtual ApplicationUser User { get; set; } = null!;
 
-        public int PartyId { get; set; } // معرف الحزب [cite: 498]
+        // الربط مع الحزب
+        public int PartyId { get; set; }
         public virtual PoliticalParty Party { get; set; } = null!;
 
-        public DateTime JoinDate { get; set; } = DateTime.Now; // تاريخ الطلب [cite: 495]
+        [Required]
+        public string NationalIdCardUrl { get; set; } = string.Empty; // رابط صورة الهوية الشخصية
 
-        public string MembershipStatus { get; set; } = "Pending"; // حالة الطلب (قيد الانتظار/مقبول) [cite: 500]
+        public string JobTitle { get; set; } = string.Empty; // المهنة (مهمة للأحزاب)
+
+        public string EducationLevel { get; set; } = string.Empty; // المستوى التعليمي
+
+        public DateTime JoinDate { get; set; } = DateTime.Now;
+
+        public string MembershipStatus { get; set; } = "Pending"; // (Pending, Approved, Rejected)
+
+        public string? AdminNotes { get; set; } // ملاحظات الأدمن (في حال الرفض مثلاً)
     }
 }

@@ -1,8 +1,44 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "الرئيسية - منصة مشاركة";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center mt-5" dir="rtl">
+    <div class="py-5 bg-light rounded-5 shadow-sm mb-5">
+        <h1 class="display-4 fw-bold text-primary">منصة مشاركة السياسية</h1>
+        <p class="lead text-secondary mt-3">تحت إشراف وزارة الشؤون السياسية والبرلمانية - المملكة الأردنية الهاشمية</p>
+        <hr class="my-4 mx-auto" style="width: 100px; border-top: 3px solid #0056b3;">
+        <p class="px-5">المنصة الرسمية لإدارة الأحزاب السياسية الأردنية وتعزيز المشاركة الشبابية في صنع القرار.</p>
+    </div>
+
+    <div class="row g-4 px-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm p-4" style="border-radius: 20px;">
+                <div class="fs-1 text-primary mb-3"><i class="bi bi-bank"></i></div>
+                <h4 class="fw-bold">بوابة الوزارة</h4>
+                <p class="small text-muted">لموظفي الوزارة لمراجعة طلبات تأسيس الأحزاب الجديدة وإصدار التراخيص الرسمية.</p>
+                <a asp-controller="Parties" asp-action="Index" class="btn btn-outline-primary rounded-pill mt-auto">الدخول للنظام</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm p-4 bg-primary text-white" style="border-radius: 20px;">
+                <div class="fs-1 mb-3"><i class="bi bi-people-fill"></i></div>
+                <h4 class="fw-bold">بوابة الأحزاب</h4>
+                <p class="small text-white-50">لمفوضي الأحزاب لإدارة شؤون أعضائهم، مراجعة طلبات الانتساب، وتنظيم الانتخابات الداخلية.</p>
+                <a asp-controller="Memberships" asp-action="Index" class="btn btn-light rounded-pill mt-auto">إدارة الحزب</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm p-4" style="border-radius: 20px;">
+                <div class="fs-1 text-success mb-3"><i class="bi bi-phone"></i></div>
+                <h4 class="fw-bold">تطبيق المواطن</h4>
+                <p class="small text-muted">للمواطنين الراغبين بالانتساب للأحزاب والمشاركة في التصويت الإلكتروني عبر الموبايل.</p>
+                <div class="mt-auto d-flex justify-content-center gap-2">
+                    <button class="btn btn-dark btn-sm rounded-3"><i class="bi bi-apple"></i> App Store</button>
+                    <button class="btn btn-dark btn-sm rounded-3"><i class="bi bi-google-play"></i> Play Store</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
