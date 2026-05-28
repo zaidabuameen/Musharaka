@@ -1,4 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema; // أضفنا هذا للـ InverseProperty
 
 namespace Musharaka.Models
 {
@@ -26,7 +29,10 @@ namespace Musharaka.Models
 
         public string? AdminId { get; set; } // معرف المستخدم اللي بكون أدمن هاد الحزب
 
-        public virtual ICollection<Membership> Members { get; set; } = new List<Membership>();
         public virtual ICollection<Election> Elections { get; set; } = new List<Election>();
+
+        // **هنا التعديل الجوهري**: حذفنا المجموعه المكررة وثبتنا هذه العلاقة بشكل صريح ومربوط بـ Party الموجود في ملف Membership
+        [InverseProperty("Party")]
+        public virtual ICollection<Membership> Memberships { get; set; } = new List<Membership>();
     }
 }

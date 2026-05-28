@@ -32,7 +32,7 @@ namespace Musharaka.Data
 
             builder.Entity<Membership>()
                 .HasOne(m => m.Party)
-                .WithMany(p => p.Members)
+                .WithMany(p => p.Memberships)
                 .HasForeignKey(m => m.PartyId)
                 .OnDelete(DeleteBehavior.Cascade);
         }

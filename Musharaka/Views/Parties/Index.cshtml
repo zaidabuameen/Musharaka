@@ -7,7 +7,7 @@
 }
 
 <style>
-    /* لمسات فلاتاوية للجدول */
+    /* لمسات فلاتاوية للجدول والبطاقات */
     .table-container {
         background: #ffffff;
         border-radius: 15px;
@@ -45,9 +45,57 @@
         padding-right: 15px;
         margin-bottom: 25px;
     }
+    
+    .stat-card {
+        border-radius: 15px;
+        transition: transform 0.2s;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
 </style>
 
 <div class="container mt-4 text-end" dir="rtl">
+
+    <div class="row g-4 mb-5 text-center">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-primary text-white p-3 stat-card">
+                <div class="card-body">
+                    <i class="bi bi-flag-fill fs-1 mb-2"></i>
+                    <h3 class="fw-bold">@ViewBag.TotalParties</h3>
+                    <p class="mb-0 small">إجمالي الأحزاب</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-success text-white p-3 stat-card">
+                <div class="card-body">
+                    <i class="bi bi-check-circle-fill fs-1 mb-2"></i>
+                    <h3 class="fw-bold">@ViewBag.ActiveParties</h3>
+                    <p class="mb-0 small">أحزاب نشطة</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-warning text-dark p-3 stat-card">
+                <div class="card-body">
+                    <i class="bi bi-hourglass-split fs-1 mb-2"></i>
+                    <h3 class="fw-bold">@ViewBag.PendingParties</h3>
+                    <p class="mb-0 small">طلبات قيد المراجعة</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-dark text-white p-3 stat-card">
+                <div class="card-body">
+                    <i class="bi bi-people-fill fs-1 mb-2"></i>
+                    <h3 class="fw-bold">@ViewBag.TotalUsers</h3>
+                    <p class="mb-0 small">إجمالي المستخدمين</p>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold text-primary section-title">الأحزاب السياسية المسجلة</h2>
@@ -64,7 +112,7 @@
                     <th>اسم الحزب</th>
                     <th>التوجه (Ideology)</th>
                     <th>المقر الرئيسي</th>
-                    <th>الحالة</th>
+                    <th class="text-center">طلبات الانضمام المعلقة</th>
                     <th class="text-center">الإجراءات</th>
                 </tr>
             </thead>
@@ -81,11 +129,27 @@
                         <td class="fw-bold">@item.Name</td>
                         <td><span class="badge bg-info text-dark">@item.Ideology</span></td>
                         <td><i class="bi bi-geo-alt-fill text-danger"></i> @item.City</td>
-                        <td>
-                            <span class="status-badge @(item.Status == "Active" ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning")">
-                                @(item.Status == "Active" ? "نشط" : "قيد المراجعة")
-                            </span>
+                        
+                        <td class="text-center">
+                            @{
+                                var pendingRequestsCount = item.Memberships?
+                                    .Count(m => m.MembershipStatus == "Pending" || m.MembershipStatus == "Under Review") ?? 0;
+                            }
+
+                            @if (pendingRequestsCount > 0)
+                            {
+                                <span class="badge bg-danger rounded-pill px-3 py-2 fs-6 shadow-sm">
+                                    <i class="bi bi-person-plus-fill me-1"></i> @pendingRequestsCount طلبات جديدة
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-light text-muted border px-3 py-2 rounded-pill">
+                                    لا يوجد طلبات
+                                </span>
+                            }
                         </td>
+                        
                         <td class="text-center">
                             <div class="btn-group shadow-sm">
                                 <a asp-action="Edit" asp-route-id="@item.PartyId" class="btn btn-sm btn-outline-primary border-0">تعديل</a>

@@ -18,29 +18,32 @@ namespace Musharaka.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        // الـ Constructor لازم يستلم الاثنين مع بعض
         public PartiesController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;
         }
 
-        // الـ Index الوحيدة اللي لازم تضل
+        // GET: Parties
+        // تم التحديث ليشمل جلب طلبات الانتساب (Memberships) وحساب الإحصائيات للداشبورد
         public async Task<IActionResult> Index()
         {
-            // جلب الأحزاب
-            var parties = await _context.PoliticalParties.ToListAsync();
+            // 1. جلب الأحزاب مع تضمين الـ Memberships لحساب عدد الطلبات المعلقة لكل حزب ديناميكياً
+            var parties = await _context.PoliticalParties
+                .Include(p => p.Memberships)
+                .ToListAsync();
 
-            // جلب المستخدمين للجدول الثاني
+            // 2. جلب المستخدمين للجدول الثاني (إدارة الصلاحيات المدمج)
             ViewBag.AllUsers = await _userManager.Users.ToListAsync();
+
+            // 3. حساب إحصائيات الـ Dashboard العلوي وتمريرها للصفحة
+            ViewBag.TotalParties = parties.Count;
+            ViewBag.ActiveParties = parties.Count(p => p.Status == "Active");
+            ViewBag.PendingParties = parties.Count(p => p.Status == "Under Review" || p.Status == "Pending");
+            ViewBag.TotalUsers = await _userManager.Users.CountAsync();
 
             return View(parties);
         }
-        //// GET: Parties
-        //public async Task<IActionResult> Index()
-        //{
-        //    return View(await _context.PoliticalParties.ToListAsync());
-        //}
 
         // GET: Parties/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -67,14 +70,16 @@ namespace Musharaka.Controllers
         }
 
         // POST: Parties/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("PartyId,Name,Description,Ideology,FoundDate,LogoUrl,Status,City,Address")] PoliticalParty politicalParty)
         {
             if (ModelState.IsValid)
             {
+                // بشكل افتراضي عند الإنشاء نربطه بالمستخدم الحالي ونضع الحالة قيد المراجعة
+                politicalParty.AdminId = _userManager.GetUserId(User);
+                politicalParty.Status = "Under Review";
+
                 _context.Add(politicalParty);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -95,15 +100,22 @@ namespace Musharaka.Controllers
             {
                 return NotFound();
             }
+
+            // جلب المستخدمين لتعبئة القائمة المنسدلة لاختيار رئيس الحزب عند التعديل
+            var users = await _userManager.Users.Select(u => new {
+                u.Id,
+                FullName = u.FirstName + " " + u.LastName + " (" + u.Email + ")"
+            }).ToListAsync();
+
+            ViewData["AdminId"] = new SelectList(users, "Id", "FullName", politicalParty.AdminId);
+
             return View(politicalParty);
         }
 
         // POST: Parties/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("PartyId,Name,Description,Ideology,FoundDate,LogoUrl,Status,City,Address")] PoliticalParty politicalParty)
+        public async Task<IActionResult> Edit(int id, [Bind("PartyId,Name,Description,Ideology,FoundDate,LogoUrl,Status,City,Address,AdminId")] PoliticalParty politicalParty)
         {
             if (id != politicalParty.PartyId)
             {
@@ -114,6 +126,22 @@ namespace Musharaka.Controllers
             {
                 try
                 {
+                    // جلب البيانات الأصلية قبل الحفظ للتأكد من حالة الحزب القديمة
+                    var oldData = await _context.PoliticalParties.AsNoTracking().FirstOrDefaultAsync(p => p.PartyId == id);
+
+                    // الأتمتة: إذا وافقت الوزارة وتحولت الحالة إلى Active، يتم ترقية صاحب الحزب إلى PartyAdmin فوراً
+                    if (politicalParty.Status == "Active" && oldData?.Status != "Active")
+                    {
+                        if (!string.IsNullOrEmpty(politicalParty.AdminId))
+                        {
+                            var user = await _userManager.FindByIdAsync(politicalParty.AdminId);
+                            if (user != null)
+                            {
+                                await _userManager.AddToRoleAsync(user, "PartyAdmin");
+                            }
+                        }
+                    }
+
                     _context.Update(politicalParty);
                     await _context.SaveChangesAsync();
                 }
@@ -130,6 +158,14 @@ namespace Musharaka.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
+            // إعادة تعبئة القائمة المنسدلة في حال فشل الـ Validation
+            var users = await _userManager.Users.Select(u => new {
+                u.Id,
+                FullName = u.FirstName + " " + u.LastName + " (" + u.Email + ")"
+            }).ToListAsync();
+            ViewData["AdminId"] = new SelectList(users, "Id", "FullName", politicalParty.AdminId);
+
             return View(politicalParty);
         }
 
@@ -171,12 +207,11 @@ namespace Musharaka.Controllers
             return _context.PoliticalParties.Any(e => e.PartyId == id);
         }
 
-
         // GET: api/PartiesApi
         [HttpGet("api/PartiesApi")]
         public async Task<IActionResult> GetPartiesApi()
         {
-            // جلب الأحزاب من قاعدة البيانات
+            // جلب الأحزاب من قاعدة البيانات كـ JSON للـ Flutter
             var parties = await _context.PoliticalParties
                 .Select(p => new {
                     p.PartyId,
@@ -189,12 +224,7 @@ namespace Musharaka.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(parties); // برجع البيانات كـ JSON مع كود 200 (Success)
-            //http://localhost:5296/api/PartiesApi
-
-
+            return Ok(parties);
         }
-
     }
-
 }
